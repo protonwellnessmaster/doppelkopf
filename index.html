@@ -97,7 +97,20 @@ label{font-size:13px;color:var(--muted);flex:1}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="gate" hidden>
+  <div class="header">
+    <div class="title">Doppelkopf</div>
+    <div class="suits">&clubs; &spades; &hearts; &diams;</div>
+  </div>
+  <div class="card">
+    <h2>Private Runde</h2>
+    <p class="hint">Passwort eingeben — dieses Gerät merkt sich die Freigabe.</p>
+    <input type="password" id="gate-pw" placeholder="Passwort" autocomplete="current-password">
+    <p class="err" id="gate-err" hidden>Falsches Passwort.</p>
+    <div class="btns"><button class="primary" id="gate-go">Öffnen</button></div>
+  </div>
+</div>
+<div class="wrap" id="app" hidden>
   <div class="header">
     <div class="title">Doppelkopf</div>
     <div class="suits">&clubs; &spades; &hearts; &diams;</div>
@@ -386,8 +399,41 @@ $("tab-abend").onclick=()=>{ UI.view="abend"; render(); };
 $("tab-alltime").onclick=()=>{ UI.view="alltime"; render(); };
 $("tab-nachtragen").onclick=()=>{ UI.histRows=(S.roster.length?S.roster.slice(0,5):["","","",""]).map(n=>({name:n,points:""})); UI.histDate=today(); UI.view="nachtragen"; render(); };
 $("backup-toggle").onclick=()=>{ UI.showBackup=!UI.showBackup; render(); };
-initRound();
-render();
+
+// ---------- Passwort-Gate ----------
+const GATE_HASH = "76bc8c9920e4733dddd3daa07f6cf67ebc8f68c17c3787589aae0d49243cdee2";
+const GATE_KEY = "doko-gate";
+async function sha256(t){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function boot(){
+  $("gate").hidden = true;
+  $("app").hidden = false;
+  initRound();
+  render();
+}
+async function tryUnlock(){
+  const h = await sha256($("gate-pw").value);
+  if(h === GATE_HASH){
+    try{ localStorage.setItem(GATE_KEY, h); }catch(e){}
+    boot();
+  }else{
+    $("gate-err").hidden = false;
+    $("gate-pw").value = "";
+    $("gate-pw").focus();
+  }
+}
+let remembered = null;
+try{ remembered = localStorage.getItem(GATE_KEY); }catch(e){}
+if(remembered === GATE_HASH){
+  boot();
+}else{
+  $("gate").hidden = false;
+  $("gate-go").onclick = tryUnlock;
+  $("gate-pw").onkeydown = e => { if(e.key === "Enter") tryUnlock(); };
+  $("gate-pw").focus();
+}
 </script>
 </body>
 </html>
