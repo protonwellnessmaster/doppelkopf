@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1B3A2E">
+<title>Doppelkopf</title>
+<style>
+:root{
+  --felt:#234A3A; --felt-dark:#1B3A2E; --cream:#F6EFDF; --ink:#1E1A17;
+  --red:#B8352C; --gold:#C9A25B; --muted:#7B7267; --line:#E9E2D2; --border:#D8CFBB;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --sans:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0%,var(--felt) 0%,var(--felt-dark) 70%);
+  font-family:var(--sans);color:var(--ink);padding:16px 12px calc(24px + env(safe-area-inset-bottom));}
+.wrap{max-width:480px;margin:0 auto}
+.header{text-align:center;color:var(--cream);margin:6px 0 14px}
+.header .title{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:.5px}
+.header .suits{color:var(--gold);font-size:12px;margin-top:2px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;background:transparent;color:var(--cream);border:1.5px solid var(--cream);border-radius:10px;
+  padding:8px 4px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.tabs button.on{background:var(--cream);color:var(--ink)}
+.card{background:var(--cream);border-radius:14px;padding:16px 14px;margin-bottom:12px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0 0 10px}
+.row{display:flex;justify-content:space-between;align-items:baseline}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.small{color:var(--muted);font-size:13px}
+.grid{display:grid;gap:6px}
+.cell{text-align:center;padding:6px 2px;min-width:0}
+.big{font-family:var(--serif);font-size:34px;line-height:1;font-weight:600;font-variant-numeric:tabular-nums}
+.neg{color:var(--red)}
+.pos{color:var(--felt)}
+.name{margin-top:6px;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ok{margin-top:10px;text-align:center;font-size:13px;font-weight:600;color:#2E7D4F}
+.ok.bad{color:var(--red)}
+.pbtn{width:100%;background:#fff;color:var(--ink);border:1.5px solid var(--border);border-radius:10px;padding:12px 4px;cursor:pointer;
+  font-family:var(--sans);font-size:13px;display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0}
+.pbtn.w{background:var(--felt);color:var(--cream);border-color:var(--felt)}
+.pbtn.o{background:var(--line);color:var(--muted);border-color:var(--line)}
+.pbtn .n{font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbtn .s{font-size:11px;opacity:.85}
+.pbtn .d{font-family:var(--serif);font-size:16px;font-weight:600}
+.dealer{width:100%;margin-top:4px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;
+  padding:4px 2px;font-size:11px;cursor:pointer;font-family:var(--sans)}
+.dealer.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600}
+.points{display:flex;align-items:center;gap:10px;margin-top:16px}
+.points .lbl{flex:1;font-size:14px}
+.points .val{font-family:var(--serif);font-size:26px;font-weight:600;min-width:36px;text-align:center}
+.step{width:40px;height:40px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:20px;cursor:pointer;color:var(--ink)}
+.err{color:var(--red);font-size:13px;margin:12px 0 0}
+.primary{background:var(--felt);color:var(--cream);border:none;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);flex:1}
+.primary:disabled{opacity:.4}
+.primary.danger{background:var(--red)}
+.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer;font-family:var(--sans)}
+.ghost.sm{padding:4px 8px;font-size:12px}
+.link{background:none;border:none;color:var(--cream);opacity:.6;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.full{width:100%;margin-top:14px}
+.btns{display:flex;gap:10px;margin-top:8px}
+.center{text-align:center;margin:4px 0 16px}
+input,textarea{width:100%;padding:11px 12px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:16px;font-family:var(--sans);color:var(--ink)}
+input.sm{margin:4px 0 0;padding:8px 10px;font-size:14px}
+textarea{height:90px;font-size:11px;font-family:monospace}
+label{font-size:13px;color:var(--muted);flex:1}
+.hist{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.hist:first-child{border-top:none}
+.hist .idx{font-family:var(--serif);color:var(--muted);width:28px;font-size:14px}
+.hist .vals{flex:1;display:grid;gap:4px}
+.hist .vals span{text-align:center;font-size:14px}
+.hist .solo{font-size:11px;color:var(--red);font-weight:600}
+.rank{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.rank:first-child{border-top:none}
+.rank .pos-n{font-family:var(--serif);font-size:18px;color:var(--muted);width:22px}
+.rank .pos-n.first{color:var(--gold)}
+.rank .info{flex:1;min-width:0}
+.rank .info .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .info .meta{font-size:12px;color:var(--muted)}
+.rank .big{font-size:28px}
+.sess{padding:10px 0;border-top:1px solid var(--line)}
+.sess:first-child{border-top:none}
+.sess .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-weight:600;font-size:14px}
+.sess .tag{color:var(--muted);font-size:12px;margin-left:6px;font-weight:400}
+.sess .tag.live{color:var(--felt)}
+.sess .list{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px}
+.sess .list span{color:var(--muted)}
+.sess .list span.top-p{color:var(--ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chips button{padding:6px 10px;font-size:13px}
+.msg{text-align:center;font-size:12px;color:var(--muted);margin:6px 0 0}
+.hrow{display:flex;gap:8px;margin-bottom:8px}
+.hrow input{margin:0}
+.hrow input.pts{flex:1;text-align:right}
+.hrow input.nm{flex:2}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="title">Doppelkopf</div>
+    <div class="suits">&clubs; &spades; &hearts; &diams;</div>
+  </div>
+  <div class="tabs">
+    <button id="tab-abend">Heute</button>
+    <button id="tab-alltime">Alltime</button>
+    <button id="tab-nachtragen">Nachtragen</button>
+  </div>
+  <div id="view"></div>
+  <div class="center"><button class="link" id="backup-toggle">Sichern / Wiederherstellen</button></div>
+  <div id="backup"></div>
+</div>
+<script>
+// ---------- Daten ----------
+const KEY = "doko-state";
+const BACKUP_KEY = "doko-backup";
+const today = () => new Date().toISOString().slice(0,10);
+const uid = () => Math.random().toString(36).slice(2,10);
+let S = load() || { roster:[], sessions:[], currentId:null, centPerPoint:10, beerPrice:2.2 };
+let UI = { view:"abend", roles:[], points:2, dealer:0, setupNames:["","","",""], confirmEnd:false,
+  histDate:today(), histRows:[], showBackup:false, savedMsg:"", importMsg:"" };
+
+function load(){ try{ const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ alert("Speichern fehlgeschlagen: "+e.message); } }
+function backup(){ try{ localStorage.setItem(BACKUP_KEY+"-"+today(), JSON.stringify(S)); }catch(e){} }
+function current(){ return S.sessions.find(s=>s.id===S.currentId) || null; }
+
+// ---------- Logik ----------
+function deltas(roles,p){
+  const w = roles.filter(r=>r==="w").length;
+  return roles.map(r=>{
+    if(r==="o") return 0;
+    if(w===2) return r==="w"? p : -p;
+    if(w===1) return r==="w"? 3*p : -p;
+    if(w===3) return r==="w"? p : -3*p;
+    return 0;
+  });
+}
+function sessionTotals(s){
+  if(s.manual) return s.manual;
+  const t = s.players.map(()=>0);
+  s.rounds.forEach(rd=>deltas(rd.roles,rd.points).forEach((v,i)=>t[i]+=v));
+  return t;
+}
+function defaultRoles(n){ return Array.from({length:n},(_,i)=> n>4 && i===n-1 ? "o":"l"); }
+function initRound(){
+  const c = current(); if(!c) return;
+  UI.roles = defaultRoles(c.players.length);
+  UI.dealer = c.players.length>4 ? c.players.length-1 : 0;
+  UI.points = 2;
+}
+function mergeRoster(names){ names.forEach(n=>{ if(!S.roster.includes(n)) S.roster.push(n); }); }
+function fmtEur(v){ return v.toFixed(2).replace(".",",")+" €"; }
+function signed(v){ return v>0? "+"+v : ""+v; }
+function fmtDate(d){ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}.${m}.${y}`; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function alltime(){
+  const map = {};
+  S.sessions.forEach(s=>{
+    const t = sessionTotals(s);
+    const max = Math.max(...t);
+    s.players.forEach((p,i)=>{
+      if(!map[p]) map[p]={name:p,points:0,evenings:0,paid:0,wins:0};
+      map[p].points+=t[i]; map[p].evenings++;
+      if(t[i]<0) map[p].paid += (-t[i]*S.centPerPoint)/100;
+      if(t[i]===max) map[p].wins++;
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.points-a.points);
+}
+
+// ---------- Rendern ----------
+const $ = id => document.getElementById(id);
+function render(){
+  ["abend","alltime","nachtragen"].forEach(v=> $("tab-"+v).classList.toggle("on", UI.view===v));
+  const view = $("view");
+  if(UI.view==="abend") view.innerHTML = current() ? renderAbend() : renderSetup();
+  else if(UI.view==="alltime") view.innerHTML = renderAlltime();
+  else view.innerHTML = renderNachtragen();
+  $("backup").innerHTML = UI.showBackup ? renderBackup() : "";
+  $("backup-toggle").textContent = UI.showBackup ? "Sicherung ausblenden" : "Sichern / Wiederherstellen";
+  bind();
+}
+function renderSetup(){
+  const chips = S.roster.length ? `<div class="chips">${S.roster.map(n=>`<button class="ghost" data-chip="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : "";
+  const inputs = UI.setupNames.map((n,i)=>`<input data-setup="${i}" value="${esc(n)}" placeholder="Spieler ${i+1}">`).join("");
+  const five = UI.setupNames.length<5 ? `<button class="ghost" id="add-five">Fünfter</button>` : `<button class="ghost" id="only-four">Nur vier</button>`;
+  return `<div class="card"><h2>Wer spielt heute?</h2>
+    <p class="hint">Vier oder fünf Namen. Bei fünf setzt jede Runde einer aus.</p>
+    ${chips}${inputs}
+    <div class="btns">${five}<button class="primary" id="start">Abend starten</button></div></div>`;
+}
+function renderAbend(){
+  const c = current();
+  const n = c.players.length;
+  const t = sessionTotals(c);
+  const sum = t.reduce((a,b)=>a+b,0);
+  const active = UI.roles.filter(r=>r!=="o").length, winners = UI.roles.filter(r=>r==="w").length;
+  const valid = active===4 && winners>=1 && winners<=3;
+  const solo = valid && winners!==2;
+  const prev = valid ? deltas(UI.roles,UI.points) : null;
+  const pot = t.reduce((s,x)=> s + (x<0 ? (-x*S.centPerPoint)/100 : 0), 0);
+  const cols = `style="grid-template-columns:repeat(${n},1fr)"`;
+  const stand = c.players.map((p,i)=>`<div class="cell"><div class="big ${t[i]<0?"neg":""}">${signed(t[i])}</div><div class="name">${esc(p)}</div></div>`).join("");
+  const btns = c.players.map((p,i)=>{
+    const r=UI.roles[i];
+    return `<div style="min-width:0"><button class="pbtn ${r}" data-cycle="${i}"><span class="n">${esc(p)}</span>
+      <span class="s">${r==="w"?"Sieg":r==="l"?"Niederlage":"setzt aus"}</span>
+      ${prev && r!=="o" ? `<span class="d">${signed(prev[i])}</span>`:""}</button>
+      <button class="dealer ${UI.dealer===i?"on":""}" data-dealer="${i}">Dealer</button></div>`;
+  }).join("");
+  const err = !valid ? `<p class="err">${active!==4?"Genau vier Spieler müssen mitspielen.":winners===0?"Mindestens einen Gewinner antippen.":"Höchstens drei Gewinner."}</p>` : "";
+  const beer = c.players.map((p,i)=>{
+    const owes = t[i]<0 ? (-t[i]*S.centPerPoint)/100 : 0;
+    return `<div class="cell"><div class="name" style="margin:0;font-size:12px">${esc(p)}</div>
+      <div style="font-family:var(--serif);font-size:20px;font-weight:600;margin-top:4px" class="${owes>0?"neg":""}">${owes>0?fmtEur(owes):"–"}</div>
+      <div class="small" style="font-size:12px;margin-top:2px">${owes>0? (owes/S.beerPrice).toFixed(1)+" 🍺" : "zahlt nichts"}</div></div>`;
+  }).join("");
+  const hist = c.rounds.length===0 ? `<p class="small" style="font-size:14px;margin:0">Noch keine Runde gespielt.</p>` :
+    [...c.rounds].reverse().map((rd,ri)=>{
+      const idx=c.rounds.length-1-ri;
+      const d=deltas(rd.roles,rd.points);
+      const s=rd.roles.filter(r=>r==="w").length!==2;
+      return `<div class="hist"><span class="idx">${idx+1}.</span><div class="vals" ${cols}>${c.players.map((_,i)=>
+        `<span style="color:${rd.roles[i]==="o"?"#C9C0AD":d[i]>0?"var(--felt)":"var(--red)"};font-weight:${rd.roles[i]==="w"?700:400}">${rd.roles[i]==="o"?"–":signed(d[i])}</span>`).join("")}</div>
+        ${s?`<span class="solo">Solo</span>`:""}<button class="ghost sm" data-del-round="${idx}">✕</button></div>`;
+    }).join("");
+  return `
+  <div class="card"><div class="row"><h2>Stand heute</h2><span class="small">${fmtDate(c.date)} · ${c.rounds.length} ${c.rounds.length===1?"Runde":"Runden"}</span></div>
+    <div class="grid" ${cols}>${stand}</div>
+    <div class="ok ${sum===0?"":"bad"}">${sum===0?"✓ Ergebnis geht auf":"✗ Ergebnis geht nicht auf ("+signed(sum)+")"}</div></div>
+  <div class="card"><h2>Neue Runde</h2>
+    <p class="hint">Antippen: Sieg → Niederlage${n>4?" → setzt aus":""}. Ein oder drei Gewinner zählen als Solo.</p>
+    <div class="grid" ${cols}>${btns}</div>
+    <div class="points"><span class="lbl">Punkte ${solo?'<span style="color:var(--red);font-weight:600">· Solo</span>':""}</span>
+      <button class="step" id="p-minus">−</button><span class="val">${UI.points}</span><button class="step" id="p-plus">+</button></div>
+    ${err}
+    <button class="primary full" id="add-round" ${valid?"":"disabled"}>Runde eintragen</button>
+    <button class="ghost" style="width:100%;margin-top:8px" id="quicksave">Zwischenspeichern</button>
+    ${UI.savedMsg?`<p class="msg">${UI.savedMsg}</p>`:""}</div>
+  <div class="card"><div class="row"><h2>Bierkasse heute</h2><span class="small">${fmtEur(pot)}</span></div>
+    <div class="grid" ${cols}>${beer}</div></div>
+  <div class="card"><h2>Verlauf</h2>${hist}</div>
+  <div class="center">${UI.confirmEnd ?
+    `<div class="btns" style="justify-content:center"><button class="ghost" style="color:var(--cream);border-color:var(--cream)" id="end-no">Abbrechen</button><button class="primary" style="flex:0 1 auto" id="end-yes">Ja, Abend abschließen</button></div>` :
+    `<button class="link" id="end-ask">Abend abschließen</button>`}</div>`;
+}
+function renderAlltime(){
+  const at = alltime();
+  const pot = at.reduce((s,p)=>s+p.paid,0);
+  const ranks = at.length===0 ? `<p class="small" style="font-size:14px;margin:0">Noch keine Abende. Trag alte Abende unter „Nachtragen" ein.</p>` :
+    at.map((p,i)=>`<div class="rank"><span class="pos-n ${i===0?"first":""}">${i+1}</span><div class="info"><div class="nm">${esc(p.name)}</div>
+      <div class="meta">${p.evenings} ${p.evenings===1?"Abend":"Abende"} · ${p.wins}× Tagessieger · ${fmtEur(p.paid)} eingezahlt</div></div>
+      <div class="big ${p.points<0?"neg":""}">${signed(p.points)}</div></div>`).join("");
+  const sess = S.sessions.length===0 ? `<p class="small" style="font-size:14px;margin:0">Keine Abende vorhanden.</p>` :
+    [...S.sessions].sort((a,b)=>b.date.localeCompare(a.date)).map(s=>{
+      const t=sessionTotals(s);
+      const max=Math.max(...t);
+      return `<div class="sess"><div class="top"><span>${fmtDate(s.date)}${s.id===S.currentId?'<span class="tag live">· läuft</span>':""}${s.manual?'<span class="tag">· nachgetragen</span>':""}</span>
+        ${s.id!==S.currentId?`<button class="ghost sm" data-del-sess="${s.id}">✕</button>`:""}</div>
+        <div class="list">${s.players.map((p,j)=>`<span class="${t[j]===max?"top-p":""}">${esc(p)} <span class="${t[j]<0?"neg":"pos"}" style="color:${t[j]<0?"var(--red)":"var(--felt)"}">${signed(t[j])}</span></span>`).join("")}</div></div>`;
+    }).join("");
+  return `
+  <div class="card"><div class="row"><h2>Alltime</h2><span class="small">${S.sessions.length} ${S.sessions.length===1?"Abend":"Abende"}</span></div>${ranks}</div>
+  <div class="card"><div class="row"><h2>Bierkasse gesamt</h2><span class="small">${fmtEur(S.beerPrice)} pro Bier</span></div>
+    <div class="row"><div style="font-family:var(--serif);font-size:30px;font-weight:600">${fmtEur(pot)}</div><div style="font-family:var(--serif);font-size:22px;font-weight:600">${Math.floor(pot/S.beerPrice)} 🍺</div></div>
+    <div class="small" style="font-size:12px;margin-top:2px">noch ${fmtEur(S.beerPrice-(pot%S.beerPrice))} bis zum nächsten Bier</div>
+    <div class="btns" style="margin-top:12px"><label>Cent pro Punkt<input class="sm" type="number" inputmode="decimal" id="cpp" value="${S.centPerPoint}"></label>
+    <label>Bierpreis in €<input class="sm" type="number" step="0.1" inputmode="decimal" id="bp" value="${S.beerPrice}"></label></div></div>
+  <div class="card"><h2>Abende</h2>${sess}</div>`;
+}
+function renderNachtragen(){
+  const rows = UI.histRows.map((r,i)=>`<div class="hrow"><input class="nm" list="roster" data-hn="${i}" value="${esc(r.name)}" placeholder="Spieler ${i+1}">
+    <input class="pts" type="number" inputmode="numeric" data-hp="${i}" value="${esc(r.points)}" placeholder="Punkte"></div>`).join("");
+  const sum = UI.histRows.reduce((s,r)=>s+(Number(r.points)||0),0);
+  const valid = UI.histRows.filter(r=>r.name.trim()).length>=4 && UI.histRows.every(r=>!r.name.trim()||r.points!=="");
+  return `<div class="card"><h2>Abend nachtragen</h2>
+    <p class="hint">Endstand des Abends pro Spieler. Die Punkte sollten sich auf null summieren.</p>
+    <label>Datum<input type="date" id="hist-date" value="${UI.histDate}" style="margin-top:4px"></label>
+    ${rows}<datalist id="roster">${S.roster.map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+    ${UI.histRows.length<5?`<button class="ghost" id="hist-five" style="margin-bottom:8px">Fünfter Spieler</button>`:""}
+    <p style="font-size:13px;margin:4px 0 12px;color:${sum===0?"var(--muted)":"var(--red)"}">Summe: ${signed(sum)}${sum!==0?" – geht so nicht auf, kannst du aber trotzdem speichern":""}</p>
+    <div class="btns"><button class="ghost" id="hist-cancel">Abbrechen</button><button class="primary" id="hist-save" ${valid?"":"disabled"}>Abend speichern</button></div></div>`;
+}
+function renderBackup(){
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith("doko")).sort().reverse();
+  const list = keys.map(k=>{
+    let info="";
+    try{
+      const p=JSON.parse(localStorage.getItem(k));
+      const n=(p.sessions||[]).length;
+      const r=(p.sessions||[]).reduce((s,x)=>s+(x.rounds||[]).length,0);
+      info=`${n} ${n===1?"Abend":"Abende"} · ${r} Runden`;
+    }catch(e){ info="unlesbar"; }
+    return `<div class="hist"><div style="flex:1;font-size:13px"><div style="font-weight:600">${esc(k)}</div><div class="small">${info}</div></div>
+      ${k!==KEY?`<button class="ghost sm" data-restore="${esc(k)}">Laden</button>`:""}</div>`;
+  }).join("");
+  return `<div class="card"><h2>Gespeicherte Stände in diesem Browser</h2>${list||'<p class="small">Nichts gefunden.</p>'}
+    <h2 style="margin-top:16px">Stand als Text sichern</h2>
+    <p class="hint">Nur als Notnagel – z. B. vor einem Handywechsel in eine Notiz kopieren.</p>
+    <textarea readonly id="export" onfocus="this.select()">${esc(JSON.stringify(S))}</textarea>
+    <h2 style="margin-top:8px">Aus Text wiederherstellen</h2>
+    <textarea id="import" placeholder="Export-Text hier einfügen" style="height:70px"></textarea>
+    <div class="btns" style="align-items:center"><button class="primary" id="do-import">Stand übernehmen</button>${UI.importMsg?`<span class="small">${UI.importMsg}</span>`:""}</div></div>`;
+}
+
+// ---------- Events ----------
+function bind(){
+  const on = (id,fn)=>{ const el=$(id); if(el) el.onclick=fn; };
+  document.querySelectorAll("[data-chip]").forEach(b=> b.onclick=()=>{
+    const i=UI.setupNames.findIndex(x=>!x.trim());
+    if(i>=0 && !UI.setupNames.includes(b.dataset.chip)){ UI.setupNames[i]=b.dataset.chip; render(); }
+  });
+  document.querySelectorAll("[data-setup]").forEach(inp=> inp.oninput=()=> UI.setupNames[+inp.dataset.setup]=inp.value);
+  on("add-five",()=>{ UI.setupNames.push(""); render(); });
+  on("only-four",()=>{ UI.setupNames=UI.setupNames.slice(0,4); render(); });
+  on("start",()=>{
+    const p=UI.setupNames.map((n,i)=>n.trim()||`Spieler ${i+1}`);
+    const s={id:uid(),date:today(),players:p,rounds:[],manual:null};
+    S.sessions.push(s); S.currentId=s.id; mergeRoster(p); save(); initRound(); render();
+  });
+  document.querySelectorAll("[data-cycle]").forEach(b=> b.onclick=()=>{
+    const i=+b.dataset.cycle; const c=current(); const r=UI.roles[i];
+    UI.roles[i] = c.players.length>4 ? (r==="w"?"l":r==="l"?"o":"w") : (r==="w"?"l":"w");
+    render();
+  });
+  document.querySelectorAll("[data-dealer]").forEach(b=> b.onclick=()=>{
+    const i=+b.dataset.dealer; UI.dealer=i; const c=current();
+    if(c.players.length>4) UI.roles=UI.roles.map((r,j)=> j===i?"o":(r==="o"?"l":r));
+    render();
+  });
+  on("p-minus",()=>{ UI.points=Math.max(1,UI.points-1); render(); });
+  on("p-plus",()=>{ UI.points++; render(); });
+  on("add-round",()=>{
+    const c=current();
+    c.rounds.push({roles:[...UI.roles],points:UI.points,ts:Date.now()});
+    save();
+    UI.dealer=(UI.dealer+1)%c.players.length;
+    UI.roles = c.players.length>4 ? c.players.map((_,i)=>i===UI.dealer?"o":"l") : c.players.map(()=>"l");
+    UI.points=2;
+    render();
+  });
+  on("quicksave",()=>{ save(); backup(); UI.savedMsg="Gesichert um "+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); render(); });
+  document.querySelectorAll("[data-del-round]").forEach(b=> b.onclick=()=>{ current().rounds.splice(+b.dataset.delRound,1); save(); render(); });
+  on("end-ask",()=>{ UI.confirmEnd=true; render(); });
+  on("end-no",()=>{ UI.confirmEnd=false; render(); });
+  on("end-yes",()=>{
+    const c=current();
+    if(c && c.rounds.length===0) S.sessions=S.sessions.filter(s=>s.id!==c.id);
+    UI.setupNames=c?[...c.players]:["","","",""];
+    S.currentId=null; UI.confirmEnd=false; save(); backup(); render();
+  });
+  document.querySelectorAll("[data-del-sess]").forEach(b=> b.onclick=()=>{
+    if(confirm("Diesen Abend wirklich löschen?")){ S.sessions=S.sessions.filter(s=>s.id!==b.dataset.delSess); save(); render(); }
+  });
+  const cpp=$("cpp"); if(cpp) cpp.onchange=()=>{ S.centPerPoint=Number(cpp.value)||0; save(); render(); };
+  const bp=$("bp"); if(bp) bp.onchange=()=>{ S.beerPrice=Number(bp.value)||0; save(); render(); };
+  const hd=$("hist-date"); if(hd) hd.onchange=()=> UI.histDate=hd.value;
+  document.querySelectorAll("[data-hn]").forEach(inp=> inp.oninput=()=> UI.histRows[+inp.dataset.hn].name=inp.value);
+  document.querySelectorAll("[data-hp]").forEach(inp=> inp.oninput=()=>{ UI.histRows[+inp.dataset.hp].points=inp.value; });
+  document.querySelectorAll("[data-hp]").forEach(inp=> inp.onchange=()=> render());
+  on("hist-five",()=>{ UI.histRows.push({name:"",points:""}); render(); });
+  on("hist-cancel",()=>{ UI.view="alltime"; render(); });
+  on("hist-save",()=>{
+    const rows=UI.histRows.filter(r=>r.name.trim());
+    const s={id:uid(),date:UI.histDate,players:rows.map(r=>r.name.trim()),rounds:[],manual:rows.map(r=>Number(r.points)||0)};
+    S.sessions.push(s);
+    S.sessions.sort((a,b)=>a.date.localeCompare(b.date));
+    mergeRoster(s.players); save(); backup(); UI.view="alltime"; render();
+  });
+  document.querySelectorAll("[data-restore]").forEach(b=> b.onclick=()=>{
+    try{ S=JSON.parse(localStorage.getItem(b.dataset.restore)); save(); initRound(); render(); }catch(e){ alert("Konnte nicht laden."); }
+  });
+  on("do-import",()=>{
+    try{
+      const p=JSON.parse($("import").value);
+      if(!p.sessions) throw 0;
+      S=p; save(); initRound(); UI.importMsg="Stand übernommen.";
+    }catch(e){ UI.importMsg="Das ist kein gültiger Export-Text."; }
+    render();
+  });
+}
+
+$("tab-abend").onclick=()=>{ UI.view="abend"; render(); };
+$("tab-alltime").onclick=()=>{ UI.view="alltime"; render(); };
+$("tab-nachtragen").onclick=()=>{ UI.histRows=(S.roster.length?S.roster.slice(0,5):["","","",""]).map(n=>({name:n,points:""})); UI.histDate=today(); UI.view="nachtragen"; render(); };
+$("backup-toggle").onclick=()=>{ UI.showBackup=!UI.showBackup; render(); };
+initRound();
+render();
+</script>
+</body>
+</html>
